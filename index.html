@@ -11,9 +11,9 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3b82f6',
-                        secondary: '#64748b',
-                        neutral: '#f1f5f9',
+                        primary: '#4361ee',
+                        secondary: '#3f37c9',
+                        neutral: '#f8f9fa',
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -24,115 +24,98 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .content-auto {
-                content-visibility: auto;
+            .btn-hover {
+                @apply transform hover:scale-105 transition-all duration-200;
             }
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .transition-custom {
-                transition: all 0.3s ease;
+            .card-shadow {
+                @apply shadow-md hover:shadow-lg transition-shadow duration-300;
             }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden transform hover:shadow-xl transition-custom">
-        <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-primary/10">
-            <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-gray-800 text-center text-shadow">
-                <i class="fa fa-bar-chart text-primary mr-2"></i>每月报表统计
-            </h1>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4 font-sans">
+    <div class="w-full max-w-md bg-white rounded-xl p-6 card-shadow">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">
+            <i class="fa fa-calculator text-primary mr-2"></i>每月报表统计
+        </h1>
+        
+        <!-- 文本框区域 -->
+        <div class="mb-6">
+            <label for="content" class="block text-sm font-medium text-gray-700 mb-2">输入报表数据</label>
+            <textarea 
+                id="content" 
+                class="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none"
+                placeholder="请粘贴业务数据..."
+                spellcheck="false"
+            ></textarea>
+            <p class="text-xs text-gray-500 mt-1">
+                <i class="fa fa-info-circle mr-1">文本框定长，可滑动</i>
+            </p>
         </div>
         
-        <div class="p-6">
-            <!-- 文本框区域 -->
-            <div class="mb-6">
-                <label for="textInput" class="block text-sm font-medium text-gray-700 mb-2">输入报表内容</label>
-                <textarea 
-                    id="textInput" 
-                    class="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom resize-none"
-                    placeholder="复制报表内容"
-                ></textarea>
-            </div>
-            
-            <!-- 按钮区域 -->
-            <div class="flex justify-center gap-4 mb-6">
-                <button 
-                    id="clearBtn" 
-                    class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition-custom flex items-center"
-                >
-                    <i class="fa fa-trash-o mr-2"></i>清空
-                </button>
-                <button 
-                    id="calculateBtn" 
-                    class="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-custom flex items-center"
-                >
-                    <i class="fa fa-calculator mr-2"></i>计算
-                </button>
-            </div>
-            
-            <!-- 结果展示区域 -->
-            <div id="resultArea" class="min-h-20 p-4 bg-neutral rounded-lg border border-gray-200 hidden">
-                <h2 class="text-lg font-semibold text-gray-700 mb-3 flex items-center">
-                    <i class="fa fa-results text-primary mr-2"></i>汇总结果
-                </h2>
-                <div id="results" class="space-y-2 text-gray-800">
+        <!-- 按钮区域 -->
+        <div class="flex justify-center gap-4 mb-6">
+            <button id="clearBtn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium btn-hover flex items-center">
+                <i class="fa fa-trash-o mr-2"></i>清空
+            </button>
+            <button id="calculateBtn" class="px-5 py-2 bg-primary text-white rounded-lg font-medium btn-hover flex items-center">
+                <i class="fa fa-line-chart mr-2"></i>计算
+            </button>
+        </div>
+        
+        <!-- 结果展示区域 -->
+        <div id="resultContainer" class="hidden">
+            <div class="p-4 bg-neutral rounded-lg border border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-700 mb-3">汇总结果</h2>
+                <div id="result" class="space-y-3 text-gray-800">
                     <!-- 结果将在这里显示 -->
                 </div>
             </div>
         </div>
-        
     </div>
 
     <script>
         // 获取DOM元素
-        const textInput = document.getElementById('textInput');
+        const textarea = document.getElementById('content');
         const clearBtn = document.getElementById('clearBtn');
         const calculateBtn = document.getElementById('calculateBtn');
-        const resultArea = document.getElementById('resultArea');
-        const results = document.getElementById('results');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultDiv = document.getElementById('result');
+        
+        // 初始化文本框内容
+        textarea.value = ``;
         
         // 清空按钮事件
         clearBtn.addEventListener('click', () => {
-            textInput.value = '';
-            resultArea.classList.add('hidden');
-            // 添加按钮点击效果
-            clearBtn.classList.add('scale-95');
-            setTimeout(() => clearBtn.classList.remove('scale-95'), 150);
+            textarea.value = '';
+            resultContainer.classList.add('hidden');
         });
         
         // 计算按钮事件
         calculateBtn.addEventListener('click', () => {
-            const text = textInput.value.trim();
-            if (!text) {
-                alert('请先输入文本内容');
+            const content = textarea.value.trim();
+            if (!content) {
+                alert('请输入要分析的文本内容');
                 return;
             }
             
-            // 解析文本并计算结果
-            const analysisResult = analyzeText(text);
-            
-            // 显示结果
-            displayResults(analysisResult);
-            
-            // 添加按钮点击效果
-            calculateBtn.classList.add('scale-95');
-            setTimeout(() => calculateBtn.classList.remove('scale-95'), 150);
+            const totals = analyzeContent(content);
+            displayResults(totals);
         });
         
-        // 解析文本内容的函数
-        function analyzeText(text) {
-            const lines = text.split('\n');
-            let overflowTotal = 0; // 溢流总金额
-            let knittingTotal = 0; // 针织总金额
+        // 分析文本内容的函数
+        function analyzeContent(content) {
+            const lines = content.split('\n');
+            let overflowTotal = 0;  // 溢流总金额
+            let knittingTotal = 0;  // 针织总金额
             
             lines.forEach(line => {
-                // 查找金额数值
-                const amountMatch = line.match(/金额(\d+\.\d+)元/);
+                // 提取金额数值
+                const amountMatch = line.match(/金额([\d.]+)元/);
                 if (amountMatch && amountMatch[1]) {
                     const amount = parseFloat(amountMatch[1]);
                     
-                    // 判断是溢流还是针织
+                    // 判断是溢流还是针织业务
                     if (line.includes('溢流')) {
                         overflowTotal += amount;
                     } else if (line.includes('针织')) {
@@ -148,32 +131,26 @@
         }
         
         // 显示结果的函数
-        function displayResults(result) {
+        function displayResults(totals) {
             // 格式化金额，添加千位分隔符
             const formatNumber = (num) => {
-                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             };
             
-            results.innerHTML = `
-                <div class="p-3 bg-blue-50 rounded border border-blue-100 flex items-center">
-                    <i class="fa fa-tint text-blue-500 mr-3 text-lg"></i>
-                    <span><strong>溢流总金额：</strong>${formatNumber(result.overflow)}元</span>
+            resultDiv.innerHTML = `
+                <div class="flex items-center p-2 bg-blue-50 rounded border border-blue-100">
+                    <i class="fa fa-tint text-blue-600 mr-3"></i>
+                    <span><strong>溢流业务总金额：</strong>${formatNumber(totals.overflow)}元</span>
                 </div>
-                <div class="p-3 bg-green-50 rounded border border-green-100 flex items-center">
-                    <i class="fa fa-scissors text-green-500 mr-3 text-lg"></i>
-                    <span><strong>针织总金额：</strong>${formatNumber(result.knitting)}元</span>
+                <div class="flex items-center p-2 bg-green-50 rounded border border-green-100">
+                    <i class="fa fa-leaf text-green-600 mr-3"></i>
+                    <span><strong>针织业务总金额：</strong>${formatNumber(totals.knitting)}元</span>
                 </div>
             `;
             
-            // 显示结果区域（带动画效果）
-            resultArea.classList.remove('hidden');
-            resultArea.classList.add('animate-fadeIn');
+            resultContainer.classList.remove('hidden');
         }
-        
-        // 初始化示例文本
-        window.addEventListener('load', () => {
-            textInput.value = ``;
-        });
     </script>
 </body>
 </html>
+    
